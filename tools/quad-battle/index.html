@@ -254,7 +254,10 @@ function concept(){const k=rnd(["rhombus","rect","square","isotrap","kite","para
  const opts=[[PROP[k],1]]; const others=Object.keys(PROP).filter(x=>x!==k); shuffle(others).slice(0,3).forEach(x=>opts.push([PROP[x],0]));
  return{fig:k,q:`<span class='hl'>${names[k]}</span>的兩條對角線：`,opts,exp:`${names[k]}的對角線${PROP[k]}。`};}
 const POOL=[calcArea,calcArea,calcAreaRev,calcPyth,calcPyth,calcRhSide,calcHalf,calcPerim,calcPerim,calcIsoDiag,concept];
-function getQ(){const q=rnd(POOL)();q.opts=shuffle(q.opts.map(([t,c])=>({t,c:!!c})));return q;}
+const NUM_OPTS=3; // 選項數量（程度弱→改少；可設 2 或 3）
+function getQ(){const q=rnd(POOL)();let o=q.opts.map(([t,c])=>({t,c:!!c}));
+ const correct=o.find(x=>x.c); const wrong=shuffle(o.filter(x=>!x.c)).slice(0,NUM_OPTS-1);
+ q.opts=shuffle([correct,...wrong]); return q;}
 
 /* ===== 狀態 ===== */
 let me=null, code=null, roomRef=null, state=null, myPlace={}, selTool="ship", busy=false, subscribed=false;

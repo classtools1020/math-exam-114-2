@@ -240,7 +240,10 @@ function calcIsoAngle(){const a=rnd([50,55,62,68,72,75]);
  opts:[[a+"°",1],[(180-a)+"°",0],[(90-a)+"°",0],[(a+10)+"°",0]],exp:`等腰梯形同一底的兩底角相等，∠B=∠A=${a}°。`};}
 const POOL=[calcArea,calcArea,calcAreaRev,calcAreaRev,calcPyth,calcPyth,calcRhombusSide,calcRhombusSide,
             calcHalf,calcHalf,calcPerim,calcPerim,calcIsoDiag,calcIsoDiag,calcIsoAngle,...L1];
-function getQ(){const q=rnd(POOL)();q.opts=shuffle(q.opts.map(([t,c])=>({t,c:!!c})));return q;}
+const NUM_OPTS=3; // 選項數量（程度弱→改少；可設 2 或 3）
+function getQ(){const q=rnd(POOL)();let o=q.opts.map(([t,c])=>({t,c:!!c}));
+ const correct=o.find(x=>x.c); const wrong=shuffle(o.filter(x=>!x.c)).slice(0,NUM_OPTS-1);
+ q.opts=shuffle([correct,...wrong]); return q;}
 
 /* ===== 棋盤 ===== */
 const N=36, COLS=6;
