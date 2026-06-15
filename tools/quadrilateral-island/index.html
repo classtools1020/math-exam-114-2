@@ -206,16 +206,40 @@ const L2=[
  ()=>({fig:null,q:"下列哪一個<span class='hl'>錯誤</span>？",opts:[["菱形的對角線一定等長",1],["菱形一定是平行四邊形",0],["長方形的對角線一定等長",0],["正方形的對角線互相垂直",0]],exp:"菱形對角線互相垂直平分，但不一定等長。"}),
 ];
 function rnd(a){return a[Math.floor(Math.random()*a.length)];}
-function calcArea(){const p=rnd([[6,8],[8,10],[10,12],[12,16],[6,12],[9,12]]);const ans=p[0]*p[1]/2;const sh=Math.random()<.5?["菱形","rhombus"]:["箏形","kite"];
- return{fig:sh[1],q:`一個<span class='hl'>${sh[0]}</span>兩條對角線長 <span class='hl'>${p[0]}</span> 和 <span class='hl'>${p[1]}</span>，面積是？`,
- opts:[[ans+"",1],[(p[0]*p[1])+"",0],[(p[0]+p[1])+"",0],[(ans+p[0])+"",0]],exp:`對角線垂直 → 面積=½×${p[0]}×${p[1]}=${ans}。`};}
-function calcPyth(){const t=rnd([[3,4,5],[6,8,10],[5,12,13],[8,15,17],[9,12,15]]);
+// 菱形/箏形面積 = ½ d₁ d₂
+function calcArea(){const p=rnd([[6,8],[8,10],[10,12],[12,16],[6,12],[9,12],[8,14],[10,16]]);const ans=p[0]*p[1]/2;const sh=Math.random()<.5?["菱形","rhombus"]:["箏形","kite"];
+ return{fig:sh[1],q:`<span class='hl'>${sh[0]}</span>兩條對角線長 <span class='hl'>${p[0]}</span> 和 <span class='hl'>${p[1]}</span>，面積是？`,
+ opts:[[ans+"",1],[(p[0]*p[1])+"",0],[(p[0]+p[1])+"",0],[(ans+p[0])+"",0]],exp:`對角線互相垂直 → 面積=½×${p[0]}×${p[1]}=${ans}。`};}
+// 已知面積與一對角線，求另一對角線
+function calcAreaRev(){const p=rnd([[6,8],[8,10],[12,6],[10,12],[16,6],[8,12]]);const A=p[0]*p[1]/2;
+ return{fig:"rhombus",q:`<span class='hl'>菱形</span>面積 <span class='hl'>${A}</span>，一條對角線長 <span class='hl'>${p[0]}</span>，另一條對角線長是？`,
+ opts:[[p[1]+"",1],[A+"",0],[p[0]+"",0],[(p[0]+p[1])+"",0]],exp:`面積=½×d₁×d₂ → ${A}=½×${p[0]}×d₂ → d₂=${p[1]}。`};}
+// 長方形對角線（畢氏）
+function calcPyth(){const t=rnd([[3,4,5],[6,8,10],[5,12,13],[8,15,17],[9,12,15],[12,16,20]]);
  return{fig:"rect",q:`<span class='hl'>長方形</span>長 <span class='hl'>${t[1]}</span>、寬 <span class='hl'>${t[0]}</span>，對角線長是？`,
- opts:[[t[2]+"",1],[(t[0]+t[1])+"",0],[(t[1]-t[0])+"",0],[(t[0]*t[1])+"",0]],exp:`對角線=√(${t[1]}²+${t[0]}²)=${t[2]}（畢氏定理）。`};}
-function calcIso(){const a=rnd([50,55,62,68,72,75]);
+ opts:[[t[2]+"",1],[(t[0]+t[1])+"",0],[(t[1]-t[0])+"",0],[(t[0]*t[1])+"",0]],exp:`對角線=√(長²+寬²)=√(${t[1]}²+${t[0]}²)=${t[2]}（畢氏）。`};}
+// 菱形邊長（半對角線畢氏）
+function calcRhombusSide(){const t=rnd([[6,8,5],[16,12,10],[10,24,13],[24,18,15],[16,30,17]]);
+ return{fig:"rhombus",q:`<span class='hl'>菱形</span>兩條對角線長 <span class='hl'>${t[0]}</span> 和 <span class='hl'>${t[1]}</span>，它的邊長是？`,
+ opts:[[t[2]+"",1],[((t[0]+t[1])/2)+"",0],[(t[2]+1)+"",0],[t[0]+"",0]],exp:`對角線互相垂直平分→半對角線 ${t[0]/2}、${t[1]/2}，邊長=√(${t[0]/2}²+${t[1]/2}²)=${t[2]}。`};}
+// 對角線互相平分 → 半對角線
+function calcHalf(){const L=rnd([12,16,20,24,28,32]);const sh=rnd(["長方形","正方形"]);
+ return{fig:sh==="正方形"?"square":"rect",q:`<span class='hl'>${sh}</span>對角線互相平分，對角線長 <span class='hl'>${L}</span>，從中心到頂點（半條對角線）長是？`,
+ opts:[[(L/2)+"",1],[L+"",0],[(L/4)+"",0],[(L-2)+"",0]],exp:`對角線互相平分 → 中心到頂點 = ${L}÷2 = ${L/2}。`};}
+// 長方形周長
+function calcPerim(){const a=rnd([4,5,6,7,8]);const b=a+rnd([2,3,4,5]);const P=2*(a+b);
+ return{fig:"rect",q:`<span class='hl'>長方形</span>長 <span class='hl'>${b}</span>、寬 <span class='hl'>${a}</span>，周長是？`,
+ opts:[[P+"",1],[(a+b)+"",0],[(a*b)+"",0],[(2*a+b)+"",0]],exp:`周長=2×(長+寬)=2×(${b}+${a})=${P}。`};}
+// 等腰梯形對角線（等長＋畢氏）
+function calcIsoDiag(){const t=rnd([[8,17,15],[9,15,12],[7,25,24],[20,25,15],[5,13,12]]);
+ return{fig:"isotrap",q:`<span class='hl'>等腰梯形</span> ABCD，∠BAC=90°，AB=<span class='hl'>${t[0]}</span>、BC=<span class='hl'>${t[1]}</span>，對角線 BD 長是？`,
+ opts:[[t[2]+"",1],[(t[0]+t[1])+"",0],[(t[1]-t[0])+"",0],[t[1]+"",0]],exp:`等腰梯形對角線等長：BD=AC=√(BC²−AB²)=√(${t[1]}²−${t[0]}²)=${t[2]}。`};}
+// 等腰梯形底角
+function calcIsoAngle(){const a=rnd([50,55,62,68,72,75]);
  return{fig:"isotrap",q:`<span class='hl'>等腰梯形</span> AB∥CD，下底角 ∠A=<span class='hl'>${a}°</span>，同一底的 ∠B=？`,
- opts:[[a+"°",1],[(180-a)+"°",0],[(90-a)+"°",0],[(a+10)+"°",0]],exp:`等腰梯形同一底的兩底角相等，∠B=${a}°。`};}
-const POOL=[...L1,...L1,...L2,...L2,calcArea,calcPyth,calcIso];
+ opts:[[a+"°",1],[(180-a)+"°",0],[(90-a)+"°",0],[(a+10)+"°",0]],exp:`等腰梯形同一底的兩底角相等，∠B=∠A=${a}°。`};}
+const POOL=[calcArea,calcArea,calcAreaRev,calcAreaRev,calcPyth,calcPyth,calcRhombusSide,calcRhombusSide,
+            calcHalf,calcHalf,calcPerim,calcPerim,calcIsoDiag,calcIsoDiag,calcIsoAngle,...L1];
 function getQ(){const q=rnd(POOL)();q.opts=shuffle(q.opts.map(([t,c])=>({t,c:!!c})));return q;}
 
 /* ===== 棋盤 ===== */
