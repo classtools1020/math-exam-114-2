@@ -7,64 +7,82 @@
 <style>
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
   :root{
-    --bg1:#0a1326;--bg2:#10204a;--card:#16203f;--line:#33508c;--txt:#eaf1ff;--muted:#94a0c4;
-    --cy:#2fe0f0;--lime:#bff24a;--gold:#ffd24a;--pur:#b58cff;--pink:#ff8fb1;
+    --ink:#fdf6e9;--muted:#cdd6e6;
+    --gold:#ffd98a;--gold2:#f0b860;--gold-deep:#b97f2e;
+    --sea:#6fd6c9;--leaf:#a8d86b;--sky:#8fc4e8;--rose:#f3a6a0;--violet:#c4a6e8;
+    --glass:rgba(18,28,50,.66);--line:rgba(255,217,138,.45);
   }
-  body{font-family:"PingFang TC","Microsoft JhengHei","Noto Sans TC",sans-serif;
-    background:radial-gradient(1100px 600px at 50% -8%,#23386e 0%,var(--bg2) 42%,var(--bg1) 100%);
-    color:var(--txt);min-height:100vh;overflow-x:hidden;position:relative;}
-  /* 背景漂浮四邊形 */
-  .bgfx{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;}
-  .bgfx span{position:absolute;display:block;border:2px solid rgba(255,255,255,.06);opacity:.5;animation:float linear infinite;}
-  @keyframes float{0%{transform:translateY(20px) rotate(0);}100%{transform:translateY(-40px) rotate(360deg);}}
-  .wrap{position:relative;z-index:1;max-width:880px;margin:0 auto;padding:44px 18px 60px;}
-  /* Hero */
-  .hero{text-align:center;margin-bottom:38px;animation:rise .6s ease both;}
-  .crown{font-size:60px;filter:drop-shadow(0 6px 14px rgba(0,0,0,.4));}
-  h1{font-size:46px;font-weight:900;line-height:1.1;margin:6px 0 10px;
-    background:linear-gradient(92deg,var(--cy),var(--lime),var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent;background-size:200% auto;animation:shine 5s linear infinite;}
-  @keyframes shine{to{background-position:200% center;}}
-  .sub{color:var(--muted);font-size:17px;letter-spacing:.5px;}
-  .sub b{color:#dbe6ff;}
+  html,body{height:100%;}
+  body{font-family:"PingFang TC","Microsoft JhengHei","Noto Sans TC",sans-serif;color:var(--ink);
+    min-height:100vh;overflow-x:hidden;position:relative;
+    background:linear-gradient(180deg,#162542 0%,#27406a 36%,#6d86ac 66%,#f0c98e 92%,#ffe6b0 100%);}
+  /* 吉卜力天空：太陽光暈 + 雲 + 星 */
+  .sky{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;}
+  .sun{position:absolute;left:50%;bottom:-120px;transform:translateX(-50%);width:520px;height:520px;border-radius:50%;
+    background:radial-gradient(circle,rgba(255,233,176,.9),rgba(255,205,130,.45) 40%,transparent 70%);filter:blur(2px);}
+  .cloud{position:absolute;background:radial-gradient(circle at 30% 40%,#fbe8cf,#f3dcb6);border-radius:50%;
+    opacity:.85;filter:blur(1px);box-shadow:30px 10px 0 -6px #f6e3c1,70px 18px 0 -10px #f1d8af,-30px 12px 0 -8px #f6e3c1;
+    animation:drift linear infinite;}
+  @keyframes drift{from{transform:translateX(-180px);}to{transform:translateX(120vw);}}
+  .star{position:absolute;width:3px;height:3px;border-radius:50%;background:#fff;opacity:.8;animation:tw 3s ease-in-out infinite;}
+  @keyframes tw{0%,100%{opacity:.25;}50%{opacity:.9;}}
+  .bird{position:absolute;font-size:18px;opacity:.55;animation:fly linear infinite;}
+  @keyframes fly{from{transform:translateX(-10vw) translateY(0);}to{transform:translateX(110vw) translateY(-30px);}}
+
+  .wrap{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:46px 18px 56px;}
+  /* 標題 */
+  .hero{text-align:center;margin-bottom:36px;animation:rise .7s ease both;}
+  .crest{font-size:58px;filter:drop-shadow(0 4px 10px rgba(80,40,0,.35));}
+  h1{font-size:50px;font-weight:900;letter-spacing:2px;line-height:1.1;margin:2px 0 12px;color:#fff7e6;
+    text-shadow:0 2px 0 var(--gold-deep),0 0 18px rgba(255,217,138,.65),0 6px 22px rgba(0,0,0,.35);}
+  .ribbon{display:inline-block;font-size:15px;font-weight:800;letter-spacing:1px;color:#4a2f0c;
+    background:linear-gradient(180deg,var(--gold),var(--gold2));padding:7px 22px;border-radius:999px;
+    box-shadow:0 4px 14px rgba(255,200,110,.4),inset 0 1px 0 rgba(255,255,255,.6);}
   /* 卡片 */
-  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;}
-  @media(max-width:560px){.grid{grid-template-columns:1fr;}h1{font-size:38px;}}
-  .tool{position:relative;display:block;text-decoration:none;color:inherit;background:linear-gradient(180deg,var(--card),#111a35);
-    border:1px solid var(--line);border-radius:22px;padding:24px 22px;overflow:hidden;
-    transition:transform .15s,box-shadow .15s,border-color .15s;animation:rise .6s ease both;}
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;}
+  @media(max-width:560px){.grid{grid-template-columns:1fr;}h1{font-size:40px;}}
+  .tool{position:relative;display:block;text-decoration:none;color:inherit;
+    background:var(--glass);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+    border:1.5px solid var(--line);border-radius:20px;padding:24px 22px 22px;overflow:hidden;
+    box-shadow:0 12px 30px rgba(10,20,40,.4),inset 0 1px 0 rgba(255,255,255,.12);
+    transition:transform .16s,box-shadow .16s,border-color .16s;animation:rise .7s ease both;}
   .tool:nth-child(1){animation-delay:.05s}.tool:nth-child(2){animation-delay:.12s}
   .tool:nth-child(3){animation-delay:.19s}.tool:nth-child(4){animation-delay:.26s}
-  .tool:hover{transform:translateY(-5px);box-shadow:0 16px 36px rgba(0,0,0,.45);}
-  .tool::before{content:"";position:absolute;inset:0;background:var(--glow);opacity:0;transition:opacity .2s;}
-  .tool:hover::before{opacity:.10;}
-  .tool:hover{border-color:var(--ac);}
-  .ico{font-size:46px;line-height:1;margin-bottom:12px;filter:drop-shadow(0 4px 8px rgba(0,0,0,.3));}
-  .tool h2{font-size:24px;font-weight:900;margin-bottom:6px;}
-  .tool p{color:var(--muted);font-size:15px;line-height:1.6;margin-bottom:16px;min-height:42px;}
-  .go{display:inline-flex;align-items:center;gap:6px;font-weight:800;font-size:15px;color:var(--ac);
-    border:1.5px solid var(--ac);border-radius:999px;padding:8px 18px;}
-  .tag{position:absolute;top:16px;right:16px;font-size:12px;font-weight:800;padding:5px 11px;border-radius:999px;
-    background:rgba(255,255,255,.08);color:#cdd9f5;border:1px solid var(--line);}
-  .a1{--ac:var(--cy);--glow:radial-gradient(400px 200px at 30% 0%,var(--cy),transparent);}
-  .a2{--ac:var(--lime);--glow:radial-gradient(400px 200px at 30% 0%,var(--lime),transparent);}
-  .a3{--ac:var(--pur);--glow:radial-gradient(400px 200px at 30% 0%,var(--pur),transparent);}
-  .a4{--ac:var(--gold);--glow:radial-gradient(400px 200px at 30% 0%,var(--gold),transparent);}
-  .foot{text-align:center;color:var(--muted);font-size:13px;margin-top:34px;line-height:1.8;}
-  .foot b{color:#cdd9f5;}
-  @keyframes rise{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:none;}}
+  .tool:hover{transform:translateY(-6px);border-color:var(--gold);box-shadow:0 20px 44px rgba(0,0,0,.5),0 0 26px rgba(255,217,138,.35);}
+  /* 角落金邊（傳說對決感） */
+  .tool .corner{position:absolute;width:18px;height:18px;border:2px solid var(--gold);opacity:.85;}
+  .c-tl{top:10px;left:10px;border-right:0;border-bottom:0;border-radius:6px 0 0 0;}
+  .c-tr{top:10px;right:10px;border-left:0;border-bottom:0;border-radius:0 6px 0 0;}
+  .c-bl{bottom:10px;left:10px;border-right:0;border-top:0;border-radius:0 0 0 6px;}
+  .c-br{bottom:10px;right:10px;border-left:0;border-top:0;border-radius:0 0 6px 0;}
+  .ico{font-size:48px;line-height:1;margin-bottom:10px;filter:drop-shadow(0 4px 8px rgba(0,0,0,.35));}
+  .tool h2{font-size:25px;font-weight:900;margin-bottom:6px;color:#fff6e2;text-shadow:0 1px 6px rgba(0,0,0,.35);}
+  .tool p{color:var(--muted);font-size:14.5px;line-height:1.65;margin-bottom:16px;min-height:44px;}
+  .go{display:inline-flex;align-items:center;gap:6px;font-weight:800;font-size:15px;color:#3a2607;
+    background:linear-gradient(180deg,var(--gold),var(--gold2));border-radius:999px;padding:9px 20px;
+    box-shadow:0 4px 12px rgba(255,200,110,.4),inset 0 1px 0 rgba(255,255,255,.55);}
+  .tag{position:absolute;top:14px;right:34px;font-size:11.5px;font-weight:800;padding:5px 11px;border-radius:999px;
+    background:rgba(0,0,0,.3);color:var(--ac);border:1px solid var(--ac);}
+  .ico,.go{}
+  .a1{--ac:var(--sea);} .a2{--ac:var(--rose);} .a3{--ac:var(--violet);} .a4{--ac:var(--leaf);}
+  .tool h2{} .a1:hover h2{color:#cfeee9}.a2:hover h2{color:#ffd9d4}
+  .foot{text-align:center;color:#5a4a2e;font-size:13px;margin-top:32px;line-height:1.9;font-weight:600;}
+  .foot b{color:#3a2c12;}
+  @keyframes rise{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:none;}}
 </style>
 </head>
 <body>
-<div class="bgfx" id="bgfx"></div>
+<div class="sky" id="sky"><div class="sun"></div></div>
 <div class="wrap">
   <div class="hero">
-    <div class="crown">🏰</div>
+    <div class="crest">🏰</div>
     <h1>四邊形王國</h1>
-    <div class="sub">114-2 數學 ・ <b>4-3 特殊四邊形</b> ・ 互動學習基地</div>
+    <span class="ribbon">114-2 數學 ・ 4-3 特殊四邊形 ・ 互動學習基地</span>
   </div>
 
   <div class="grid">
     <a class="tool a1" href="tools/quadrilateral-island/">
+      <i class="corner c-tl"></i><i class="corner c-tr"></i><i class="corner c-bl"></i><i class="corner c-br"></i>
       <span class="tag">單人</span>
       <div class="ico">🎯</div>
       <h2>尋寶海戰</h2>
@@ -73,14 +91,16 @@
     </a>
 
     <a class="tool a2" href="tools/quad-battle/">
+      <i class="corner c-tl"></i><i class="corner c-tr"></i><i class="corner c-bl"></i><i class="corner c-br"></i>
       <span class="tag">連線・兩組</span>
       <div class="ico">⚔️</div>
       <h2>海戰對戰版</h2>
-      <p>兩組連線 PK！佈署艦隊與陷阱，答對 4-3 題目攻擊，擊沉對方兩艘船就獲勝。</p>
+      <p>兩組連線 PK！佈署艦隊與陷阱，答對 4-3 題目攻擊，擊沉對方兩艘船獲勝。</p>
       <span class="go">建立 / 加入房間 →</span>
     </a>
 
     <a class="tool a3" href="tools/quad-3d/">
+      <i class="corner c-tl"></i><i class="corner c-tr"></i><i class="corner c-bl"></i><i class="corner c-br"></i>
       <span class="tag">3D 教學</span>
       <div class="ico">🌀</div>
       <h2>3D 互動探索</h2>
@@ -89,6 +109,7 @@
     </a>
 
     <a class="tool a4" href="tools/teacher/">
+      <i class="corner c-tl"></i><i class="corner c-tr"></i><i class="corner c-bl"></i><i class="corner c-br"></i>
       <span class="tag">老師專用</span>
       <div class="ico">🧑‍🏫</div>
       <h2>教師後台</h2>
@@ -98,26 +119,26 @@
   </div>
 
   <div class="foot">
-    🐙 <b>芎林國中・數學</b>　｜　配合課本 4-3 特殊四邊形<br>
+    🌿 <b>芎林國中・數學</b>　｜　配合課本 4-3 特殊四邊形<br>
     對角線性質 ・ 判別法 ・ 面積 ½d₁d₂ ・ 畢氏定理 ・ 等腰梯形
   </div>
 </div>
 
 <script>
-  // 背景漂浮四邊形
-  const SH=["polygon","rect","rhombus"];
-  const box=document.getElementById("bgfx");
-  for(let i=0;i<9;i++){
-    const s=document.createElement("span");
-    const size=40+Math.random()*90;
-    s.style.width=size+"px"; s.style.height=size*(0.6+Math.random()*0.6)+"px";
-    s.style.left=Math.random()*100+"vw"; s.style.top=Math.random()*100+"vh";
-    s.style.animationDuration=(12+Math.random()*16)+"s";
-    s.style.animationDelay=(-Math.random()*16)+"s";
-    if(Math.random()<.5) s.style.borderRadius="0";
-    if(Math.random()<.4) s.style.transform="rotate(45deg)";
-    box.appendChild(s);
-  }
+  const sky=document.getElementById("sky");
+  // 雲
+  for(let i=0;i<5;i++){const c=document.createElement("div");c.className="cloud";
+    const s=60+Math.random()*70;c.style.width=s+"px";c.style.height=s*0.5+"px";
+    c.style.top=(6+Math.random()*45)+"vh";c.style.animationDuration=(40+Math.random()*40)+"s";
+    c.style.animationDelay=(-Math.random()*40)+"s";sky.appendChild(c);}
+  // 星
+  for(let i=0;i<26;i++){const st=document.createElement("div");st.className="star";
+    st.style.left=Math.random()*100+"vw";st.style.top=Math.random()*48+"vh";
+    st.style.animationDelay=(Math.random()*3)+"s";sky.appendChild(st);}
+  // 小鳥
+  for(let i=0;i<3;i++){const b=document.createElement("div");b.className="bird";b.textContent="ᘛ";
+    b.style.top=(10+Math.random()*30)+"vh";b.style.animationDuration=(22+Math.random()*16)+"s";
+    b.style.animationDelay=(-Math.random()*20)+"s";sky.appendChild(b);}
 </script>
 </body>
 </html>
