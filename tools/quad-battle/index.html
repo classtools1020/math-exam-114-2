@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>四邊形海戰・對戰版 ⚔️</title>
+<style>
+  *{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ height:100%; }
+  :root{
+    --bg1:#0a1326; --bg2:#10204a; --card:#15203f; --tile:#1d2c52; --tile2:#27406f;
+    --line:#33508c; --txt:#eaf1ff; --muted:#8ea2cc;
+    --cy:#2fe0f0; --lime:#bff24a; --gold:#ffd24a; --bad:#ff6b81; --good:#5be39a; --pur:#b58cff;
+  }
+  body{ font-family:"PingFang TC","Microsoft JhengHei","Noto Sans TC",sans-serif;
+    background:radial-gradient(1000px 500px at 50% -5%,#1b3a78 0%,var(--bg2) 45%,var(--bg1) 100%);
+    color:var(--txt); min-height:100%; display:flex; align-items:flex-start; justify-content:center;
+    padding:12px; user-select:none; -webkit-user-select:none; overflow-x:hidden; }
+  .app{ width:100%; max-width:560px; }
+  .screen{ display:none; } .screen.active{ display:block; animation:fade .25s; }
+  @keyframes fade{ from{opacity:0; transform:translateY(8px);} to{opacity:1;} }
+  .card{ background:linear-gradient(180deg,var(--card),#101a35); border:1px solid var(--line);
+    border-radius:20px; padding:18px; box-shadow:0 16px 40px rgba(0,0,0,.5); margin-bottom:12px; }
+  .hero{ text-align:center; padding:22px 16px; }
+  .wave{ font-size:56px; }
+  .title{ font-size:34px; font-weight:900; margin:4px 0 8px;
+    background:linear-gradient(90deg,var(--cy),var(--lime)); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .desc{ color:var(--muted); font-size:15px; line-height:1.7; }
+  input{ font-family:inherit; font-size:20px; padding:13px 14px; border-radius:12px; border:1.5px solid var(--line);
+    background:var(--tile); color:var(--txt); width:100%; text-align:center; margin:6px 0; }
+  input::placeholder{ color:#6f82ad; }
+  .btn{ font-family:inherit; font-size:20px; font-weight:800; padding:14px 30px; border:none; border-radius:13px;
+    cursor:pointer; color:#06121a; background:linear-gradient(90deg,var(--cy),var(--lime));
+    box-shadow:0 6px 18px rgba(47,224,240,.3); transition:transform .08s; width:100%; margin-top:6px; }
+  .btn:active{ transform:translateY(3px); }
+  .btn.alt{ background:linear-gradient(90deg,var(--gold),#ff9d42); box-shadow:none; }
+  .btn.ghost{ background:transparent; color:var(--cy); border:1.5px solid var(--cy); box-shadow:none; }
+  .btn:disabled{ opacity:.45; cursor:default; }
+  .row{ display:flex; gap:8px; } .row .btn{ margin-top:0; }
+  .small{ font-size:13px; color:var(--muted); text-align:center; margin-top:8px; }
+  .status{ text-align:center; font-size:15px; color:var(--gold); margin:6px 0; min-height:20px; }
+
+  /* 房號 */
+  .code-big{ font-size:46px; font-weight:900; letter-spacing:8px; color:var(--cy); text-align:center; margin:6px 0; }
+
+  /* HUD */
+  .hud{ display:flex; gap:8px; margin-bottom:10px; }
+  .hud .p{ flex:1; background:var(--card); border:1px solid var(--line); border-radius:12px; padding:8px 6px; text-align:center; }
+  .hud .p.me{ border-color:var(--cy); } .hud .p.turn{ box-shadow:0 0 0 2px var(--lime) inset; }
+  .hud .nm{ font-size:13px; font-weight:800; } .hud .nm.a{color:var(--cy);} .hud .nm.b{color:var(--pur);}
+  .hud .hpv{ font-size:15px; color:var(--bad); letter-spacing:1px; }
+  .hud .sk{ font-size:12px; color:var(--gold); }
+  .turnbar{ text-align:center; font-size:20px; font-weight:900; padding:8px; border-radius:12px; margin-bottom:10px; }
+  .turnbar.you{ background:rgba(191,242,74,.16); color:var(--lime); border:1px solid var(--lime); }
+  .turnbar.wait{ background:var(--card); color:var(--muted); border:1px solid var(--line); }
+
+  /* 棋盤 */
+  .lbl{ font-size:14px; color:var(--muted); margin:2px 0 6px; font-weight:700; }
+  .lbl b{ color:var(--txt); }
+  .board{ display:grid; gap:7px; }
+  .cell{ aspect-ratio:1; border-radius:11px; background:linear-gradient(180deg,var(--tile),#15243f);
+    border:1px solid var(--line); display:flex; align-items:center; justify-content:center; font-size:26px;
+    cursor:pointer; transition:transform .08s, background .15s; }
+  .cell:active{ transform:scale(.92); }
+  .cell.hit{ animation:flip .35s; } @keyframes flip{0%{transform:rotateY(90deg);}100%{transform:rotateY(0);}}
+  .cell.water{ background:#13325e; } .cell.bomb{ background:rgba(255,107,129,.22); border-color:var(--bad);}
+  .cell.star{ background:rgba(91,227,154,.22); border-color:var(--good);} .cell.ship{ background:rgba(255,210,74,.25); border-color:var(--gold);}
+  .cell.death{ background:rgba(181,140,255,.25); border-color:var(--pur);}
+  .cell.sel{ outline:3px solid var(--lime); }
+  .cell.dim{ opacity:.4; cursor:default; }
+
+  /* 佈署工具列 */
+  .palette{ display:flex; gap:6px; margin-bottom:10px; }
+  .tool{ flex:1; background:var(--tile); border:1.5px solid var(--line); border-radius:11px; padding:8px 4px; text-align:center; cursor:pointer; }
+  .tool.on{ border-color:var(--lime); background:var(--tile2); }
+  .tool .e{ font-size:22px; } .tool .n{ font-size:11px; color:var(--muted); } .tool .c{ font-size:13px; font-weight:800; color:var(--cy); }
+
+  /* 題目彈窗 */
+  .modal{ position:fixed; inset:0; background:rgba(5,10,22,.8); display:none; align-items:center; justify-content:center; padding:14px; z-index:40;}
+  .modal.show{ display:flex; }
+  .qbox{ width:100%; max-width:500px; background:linear-gradient(180deg,var(--card),#101a35); border:1px solid var(--line);
+    border-radius:18px; padding:18px; box-shadow:0 20px 50px rgba(0,0,0,.6); }
+  .qtop{ font-size:13px; color:var(--gold); margin-bottom:6px; }
+  .diagram{ display:flex; justify-content:center; margin:2px 0 10px; } svg.fig{ width:150px; height:140px; }
+  .qtext{ font-size:20px; font-weight:800; line-height:1.5; margin-bottom:12px; } .qtext .hl{ color:var(--lime); }
+  .opts{ display:flex; flex-direction:column; gap:8px; }
+  .opt{ font-family:inherit; text-align:left; font-size:18px; font-weight:600; background:var(--tile); border:1.5px solid var(--line);
+    color:var(--txt); padding:13px 15px; border-radius:12px; cursor:pointer; display:flex; gap:10px; align-items:center; }
+  .opt .k{ flex:0 0 24px; height:24px; border-radius:6px; background:var(--card); border:1px solid var(--line); display:flex; align-items:center; justify-content:center; font-weight:900; color:var(--cy); font-size:13px;}
+  .opt.correct{ border-color:var(--good); background:rgba(91,227,154,.16);} .opt.correct .k{background:var(--good);color:#04140b;}
+  .opt.wrong{ border-color:var(--bad); background:rgba(255,107,129,.14);} .opt.wrong .k{background:var(--bad);color:#1a0207;}
+  .opt.dis{ pointer-events:none; opacity:.55;} .opt.dis.correct,.opt.dis.wrong{opacity:1;}
+  .fb{ margin-top:12px; border-radius:12px; padding:12px 14px; display:none; font-size:14px; line-height:1.6;}
+  .fb.show{display:block;} .fb.ok{background:rgba(91,227,154,.12);border:1px solid var(--good);} .fb.ng{background:rgba(255,107,129,.1);border:1px solid var(--bad);}
+  .fb b{display:block;font-size:17px;margin-bottom:3px;} .fb.ok b{color:var(--good);} .fb.ng b{color:var(--bad);}
+  .mnext{ margin-top:10px; } .mnext .btn{ margin-top:0; }
+
+  .shake{ animation:shake .4s; } @keyframes shake{0%,100%{transform:none;}20%{transform:translateX(-8px);}40%{transform:translateX(8px);}60%{transform:translateX(-5px);}80%{transform:translateX(5px);}}
+  .flash{ position:fixed; inset:0; pointer-events:none; z-index:60; opacity:0; background:radial-gradient(circle,rgba(255,80,100,.5),transparent 70%);}
+  .flash.go{ animation:fl .5s;} @keyframes fl{0%{opacity:0;}30%{opacity:1;}100%{opacity:0;}}
+  .fx{ position:fixed; top:-30px; font-size:26px; pointer-events:none; z-index:55;}
+  @keyframes fall{ to{ transform:translateY(110vh) rotate(360deg); opacity:.2;} }
+  .endbig{ font-size:60px;} .endt{ font-size:30px; font-weight:900; margin:6px 0; background:linear-gradient(90deg,var(--gold),var(--lime)); -webkit-background-clip:text; background-clip:text; color:transparent;}
+  .legend{ display:flex; flex-wrap:wrap; gap:6px; justify-content:center; font-size:12px; color:#cdd9f5; margin-top:8px;}
+  .legend span{ background:var(--tile); border:1px solid var(--line); padding:4px 8px; border-radius:8px;}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- 連線中 -->
+  <div id="s-load" class="screen active"><div class="card hero">
+    <div class="wave">⚓</div><div class="title">四邊形海戰</div>
+    <div class="status" id="loadStatus">連線中…</div>
+  </div></div>
+
+  <!-- 首頁 -->
+  <div id="s-home" class="screen"><div class="card hero">
+    <div class="wave">⚔️</div><div class="title">四邊形海戰・對戰版</div>
+    <div class="desc">兩組連線對戰！佈署艦隊與陷阱，<br>答對 4-3 數學題才能攻擊，<br>擊沉對方<b style="color:#fff">兩艘主戰艦</b>就獲勝！</div>
+    <input id="nick" maxlength="8" placeholder="輸入你的隊名（例：紅隊）">
+    <button class="btn" id="btnCreate">🏴 建立房間（當隊長）</button>
+    <div class="small">— 或 —</div>
+    <input id="joinCode" inputmode="numeric" maxlength="4" placeholder="輸入 4 位數房號">
+    <button class="btn alt" id="btnJoin">🚪 加入房間</button>
+    <div class="status" id="homeStatus"></div>
+  </div></div>
+
+  <!-- 等待 -->
+  <div id="s-wait" class="screen"><div class="card hero">
+    <div class="desc">把這個房號告訴另一組：</div>
+    <div class="code-big" id="waitCode">----</div>
+    <div class="status" id="waitStatus">等待對手加入…</div>
+    <div class="small">對手加入後會自動進入佈署階段</div>
+  </div></div>
+
+  <!-- 佈署 -->
+  <div id="s-place" class="screen">
+    <div class="card">
+      <div class="lbl">🛠️ 佈署你的海域　<b id="placeName"></b></div>
+      <div class="palette" id="palette"></div>
+      <div class="board" id="placeBoard" style="grid-template-columns:repeat(4,1fr);"></div>
+      <div class="legend">
+        <span>🚢 主戰艦×2</span><span>💣 炸彈×2</span><span>⭐ 救命星×2</span><span>☠️ 死亡×1</span>
+      </div>
+      <div class="row" style="margin-top:10px;">
+        <button class="btn ghost" id="btnRandom">🎲 隨機</button>
+        <button class="btn ghost" id="btnClear">🗑️ 清空</button>
+      </div>
+      <button class="btn" id="btnReady" disabled>✅ 佈署完成</button>
+      <div class="status" id="placeStatus"></div>
+    </div>
+  </div>
+
+  <!-- 對戰 -->
+  <div id="s-battle" class="screen">
+    <div class="hud" id="hud"></div>
+    <div class="turnbar" id="turnbar"></div>
+    <div class="card">
+      <div class="lbl">🎯 敵方海域（點格子攻擊）</div>
+      <div class="board" id="enemyBoard" style="grid-template-columns:repeat(4,1fr);"></div>
+    </div>
+    <div class="card">
+      <div class="lbl">🛡️ 我方海域（你佈的陣）</div>
+      <div class="board" id="myBoard" style="grid-template-columns:repeat(4,1fr);"></div>
+    </div>
+  </div>
+
+  <!-- 結算 -->
+  <div id="s-end" class="screen"><div class="card hero">
+    <div class="endbig" id="endIcon">🏆</div>
+    <div class="endt" id="endTitle"></div>
+    <div class="desc" id="endMsg"></div>
+    <button class="btn" id="btnAgain">🔁 再來一局</button>
+    <button class="btn ghost" id="btnHome" style="margin-top:8px;">🏠 回首頁</button>
+  </div></div>
+
+</div>
+
+<div class="modal" id="modal"><div class="qbox">
+  <div class="qtop" id="qtop"></div>
+  <div class="diagram" id="figWrap"></div>
+  <div class="qtext" id="qtext"></div>
+  <div class="opts" id="opts"></div>
+  <div class="fb" id="fb"></div>
+  <div class="mnext" id="mnext"></div>
+</div></div>
+<div class="flash" id="flash"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+import { getDatabase, ref, set, update, get, onValue } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyB27uSUnTSYkKJ5u5FqOqEnSbuA9br4lmE",
+  authDomain: "classtools1019.firebaseapp.com",
+  databaseURL: "https://classtools1019-default-rtdb.firebaseio.com",
+  projectId: "classtools1019",
+  storageBucket: "classtools1019.firebasestorage.app",
+  messagingSenderId: "402119556579",
+  appId: "1:402119556579:web:e0bace85a3454fb88eb4d6"
+};
+const fbApp = initializeApp(firebaseConfig);
+const auth = getAuth(fbApp);
+const db = getDatabase(fbApp);
+
+/* ===== 設定 ===== */
+const SIZE=4, N=SIZE*SIZE, HP0=8;
+const PLAN={ship:2,bomb:2,star:2,death:1};
+const PIECE={ship:{e:"🚢",n:"主戰艦"},bomb:{e:"💣",n:"炸彈"},star:{e:"⭐",n:"救命星"},death:{e:"☠️",n:"死亡"}};
+
+/* ===== 題庫（對齊課本4-3，以計算為主）===== */
+const SHAPES={
+  para:{v:[[26,100],[58,44],[134,44],[102,100]]}, rect:{v:[[24,46],[136,46],[136,100],[24,100]]},
+  rhombus:{v:[[80,24],[134,72],[80,120],[26,72]]}, square:{v:[[40,34],[120,34],[120,114],[40,114]]},
+  kite:{v:[[80,20],[126,70],[80,126],[34,70]]}, isotrap:{v:[[52,40],[108,40],[140,106],[20,106]]},
+};
+function fig(key){ const s=SHAPES[key]; if(!s) return ""; const v=s.v;
+  const poly=v.map(p=>p.join(",")).join(" "); const cx=(v[0][0]+v[2][0])/2,cy=(v[0][1]+v[2][1])/2;
+  return `<svg class="fig" viewBox="0 0 160 145">
+   <polygon points="${poly}" fill="rgba(47,224,240,.10)" stroke="#eaf1ff" stroke-width="3" stroke-linejoin="round"/>
+   <line x1="${v[0][0]}" y1="${v[0][1]}" x2="${v[2][0]}" y2="${v[2][1]}" stroke="#2fe0f0" stroke-width="2" stroke-dasharray="5 4"/>
+   <line x1="${v[1][0]}" y1="${v[1][1]}" x2="${v[3][0]}" y2="${v[3][1]}" stroke="#bff24a" stroke-width="2" stroke-dasharray="5 4"/>
+   <circle cx="${cx}" cy="${cy}" r="3" fill="#fff"/>
+   ${v.map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="3.5" fill="#eaf1ff"/>`).join("")}</svg>`;
+}
+const PROP={ para:"互相平分，但不等長也不垂直", rect:"等長且互相平分，但不垂直",
+  rhombus:"互相垂直平分，但不等長", square:"等長、互相垂直、又互相平分",
+  kite:"一條對角線垂直平分另一條", isotrap:"等長，但不互相平分" };
+function rnd(a){return a[Math.floor(Math.random()*a.length)];}
+function calcArea(){const p=rnd([[6,8],[8,10],[10,12],[12,16],[6,12],[9,12]]);const ans=p[0]*p[1]/2;const sh=Math.random()<.5?["菱形","rhombus"]:["箏形","kite"];
+ return{fig:sh[1],q:`<span class='hl'>${sh[0]}</span>兩對角線長 <span class='hl'>${p[0]}</span> 和 <span class='hl'>${p[1]}</span>，面積=？`,
+ opts:[[ans+"",1],[(p[0]*p[1])+"",0],[(p[0]+p[1])+"",0],[(ans+p[0])+"",0]],exp:`面積=½×${p[0]}×${p[1]}=${ans}`};}
+function calcAreaRev(){const p=rnd([[6,8],[8,10],[12,6],[10,12],[16,6]]);const A=p[0]*p[1]/2;
+ return{fig:"rhombus",q:`<span class='hl'>菱形</span>面積 <span class='hl'>${A}</span>，一對角線 <span class='hl'>${p[0]}</span>，另一對角線=？`,
+ opts:[[p[1]+"",1],[A+"",0],[p[0]+"",0],[(p[0]+p[1])+"",0]],exp:`${A}=½×${p[0]}×d → d=${p[1]}`};}
+function calcPyth(){const t=rnd([[3,4,5],[6,8,10],[5,12,13],[8,15,17],[9,12,15]]);
+ return{fig:"rect",q:`<span class='hl'>長方形</span>長 <span class='hl'>${t[1]}</span> 寬 <span class='hl'>${t[0]}</span>，對角線=？`,
+ opts:[[t[2]+"",1],[(t[0]+t[1])+"",0],[(t[1]-t[0])+"",0],[(t[0]*t[1])+"",0]],exp:`√(${t[1]}²+${t[0]}²)=${t[2]}（畢氏）`};}
+function calcRhSide(){const t=rnd([[6,8,5],[16,12,10],[10,24,13],[24,18,15]]);
+ return{fig:"rhombus",q:`<span class='hl'>菱形</span>兩對角線 <span class='hl'>${t[0]}</span> 和 <span class='hl'>${t[1]}</span>，邊長=？`,
+ opts:[[t[2]+"",1],[((t[0]+t[1])/2)+"",0],[(t[2]+1)+"",0],[t[0]+"",0]],exp:`半對角線 ${t[0]/2}、${t[1]/2}→邊=√(${t[0]/2}²+${t[1]/2}²)=${t[2]}`};}
+function calcHalf(){const L=rnd([12,16,20,24]);const sh=rnd(["長方形","正方形"]);
+ return{fig:sh==="正方形"?"square":"rect",q:`<span class='hl'>${sh}</span>對角線互相平分，對角線長 <span class='hl'>${L}</span>，中心到頂點=？`,
+ opts:[[(L/2)+"",1],[L+"",0],[(L/4)+"",0],[(L-2)+"",0]],exp:`${L}÷2=${L/2}`};}
+function calcPerim(){const a=rnd([4,5,6,7]);const b=a+rnd([2,3,4]);const P=2*(a+b);
+ return{fig:"rect",q:`<span class='hl'>長方形</span>長 <span class='hl'>${b}</span> 寬 <span class='hl'>${a}</span>，周長=？`,
+ opts:[[P+"",1],[(a+b)+"",0],[(a*b)+"",0],[(2*a+b)+"",0]],exp:`2×(${b}+${a})=${P}`};}
+function calcIsoDiag(){const t=rnd([[8,17,15],[9,15,12],[7,25,24],[5,13,12]]);
+ return{fig:"isotrap",q:`<span class='hl'>等腰梯形</span> ∠BAC=90°，AB=<span class='hl'>${t[0]}</span> BC=<span class='hl'>${t[1]}</span>，對角線 BD=？`,
+ opts:[[t[2]+"",1],[(t[0]+t[1])+"",0],[(t[1]-t[0])+"",0],[t[1]+"",0]],exp:`對角線等長 BD=AC=√(${t[1]}²−${t[0]}²)=${t[2]}`};}
+function concept(){const k=rnd(["rhombus","rect","square","isotrap","kite","para"]);const names={rhombus:"菱形",rect:"長方形",square:"正方形",isotrap:"等腰梯形",kite:"箏形",para:"平行四邊形"};
+ const opts=[[PROP[k],1]]; const others=Object.keys(PROP).filter(x=>x!==k); shuffle(others).slice(0,3).forEach(x=>opts.push([PROP[x],0]));
+ return{fig:k,q:`<span class='hl'>${names[k]}</span>的兩條對角線：`,opts,exp:`${names[k]}的對角線${PROP[k]}。`};}
+const POOL=[calcArea,calcArea,calcAreaRev,calcPyth,calcPyth,calcRhSide,calcHalf,calcPerim,calcPerim,calcIsoDiag,concept];
+function getQ(){const q=rnd(POOL)();q.opts=shuffle(q.opts.map(([t,c])=>({t,c:!!c})));return q;}
+
+/* ===== 狀態 ===== */
+let me=null, code=null, roomRef=null, state=null, myPlace={}, selTool="ship", busy=false, subscribed=false;
+function $(id){return document.getElementById(id);}
+function show(id){ document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active")); $(id).classList.add("active"); window.scrollTo(0,0); }
+function shuffle(a){ a=[...a]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+const cnt=(o,t)=>Object.values(o||{}).filter(v=>v===t).length;
+const myHpKey=()=>me==="A"?"pA_hp":"pB_hp"; const oppHpKey=()=>me==="A"?"pB_hp":"pA_hp";
+const oppBoardKey=()=>me==="A"?"boardB":"boardA"; const myBoardKey=()=>me==="A"?"boardA":"boardB";
+const oppRevKey=()=>me==="A"?"revealB":"revealA"; const myRevKey=()=>me==="A"?"revealA":"revealB";
+const opp=()=>me==="A"?"B":"A";
+
+/* ===== 連線 ===== */
+signInAnonymously(auth).then(()=>{ $("loadStatus").textContent="連線成功！"; setTimeout(()=>show("s-home"),300); })
+ .catch(e=>{ $("loadStatus").textContent="連線失敗："+e.message; });
+
+function newCode(){ return String(Math.floor(1000+Math.random()*9000)); }
+function initialState(name){ return { phase:"placement", turn:"A", winner:null,
+  pA_joined:true, pB_joined:false, pA_ready:false, pB_ready:false, pA_name:name, pB_name:"",
+  pA_hp:HP0, pB_hp:HP0, boardA:{}, boardB:{}, revealA:{}, revealB:{}, msg:"" }; }
+
+$("btnCreate").onclick=async()=>{
+  const name=($("nick").value||"A隊").trim().slice(0,8)||"A隊";
+  code=newCode(); me="A"; roomRef=ref(db,"quadBattle/"+code);
+  try{ await set(roomRef, initialState(name)); }catch(e){ $("homeStatus").textContent="建立失敗："+e.message; return; }
+  myPlace={}; $("waitCode").textContent=code; show("s-wait"); subscribe();
+};
+$("btnJoin").onclick=async()=>{
+  const c=($("joinCode").value||"").trim();
+  const name=($("nick").value||"B隊").trim().slice(0,8)||"B隊";
+  if(!/^\d{4}$/.test(c)){ $("homeStatus").textContent="請輸入 4 位數房號"; return; }
+  roomRef=ref(db,"quadBattle/"+c);
+  let snap; try{ snap=await get(roomRef); }catch(e){ $("homeStatus").textContent="加入失敗："+e.message; return; }
+  if(!snap.exists()){ $("homeStatus").textContent="找不到這個房號"; return; }
+  if(snap.val().pB_joined){ $("homeStatus").textContent="房間已滿"; return; }
+  code=c; me="B"; myPlace={};
+  await update(roomRef,{pB_joined:true, pB_name:name});
+  subscribe();
+};
+function subscribe(){ if(subscribed) return; subscribed=true;
+  onValue(roomRef, snap=>{ state=snap.val(); if(!state) return; route(); });
+}
+
+/* ===== 畫面路由 ===== */
+function route(){
+  if(state.winner){ renderEnd(); return; }
+  if(state.phase==="placement"){
+    // 雙方都加入＋都完成 → 進入對戰
+    if(state.pA_joined&&state.pB_joined&&state.pA_ready&&state.pB_ready){
+      update(roomRef,{phase:"battle",turn:"A"}); return;
+    }
+    if(me==="A" && !state.pB_joined){ show("s-wait"); $("waitStatus").textContent="等待對手加入…"; return; }
+    renderPlace(); return;
+  }
+  if(state.phase==="battle"){ renderBattle(); return; }
+}
+
+/* ===== 佈署 ===== */
+function renderPlace(){
+  show("s-place");
+  $("placeName").textContent = me==="A"?(state.pA_name||"A隊"):(state.pB_name||"B隊");
+  const pal=$("palette"); pal.innerHTML="";
+  Object.keys(PLAN).forEach(t=>{
+    const left=PLAN[t]-cnt(myPlace,t);
+    const d=document.createElement("div"); d.className="tool"+(selTool===t?" on":"");
+    d.innerHTML=`<div class="e">${PIECE[t].e}</div><div class="n">${PIECE[t].n}</div><div class="c">剩 ${left}</div>`;
+    d.onclick=()=>{ selTool=t; renderPlace(); }; pal.appendChild(d);
+  });
+  const b=$("placeBoard"); b.innerHTML="";
+  for(let i=0;i<N;i++){
+    const c=document.createElement("div"); const t=myPlace[i];
+    c.className="cell"+(t?(" "+t):"");
+    c.textContent=t?PIECE[t].e:"";
+    c.onclick=()=>{
+      if(myPlace[i]){ delete myPlace[i]; }
+      else { if(cnt(myPlace,selTool)<PLAN[selTool]) myPlace[i]=selTool; }
+      renderPlace();
+    };
+    b.appendChild(c);
+  }
+  const total=Object.values(PLAN).reduce((a,c)=>a+c,0);
+  const placed=Object.keys(myPlace).length;
+  const ready = (me==="A"?state.pA_ready:state.pB_ready);
+  $("btnReady").disabled = placed!==total || ready;
+  $("btnReady").textContent = ready?"✅ 已完成，等對方…":`✅ 佈署完成（${placed}/${total}）`;
+  const oppReady=(me==="A"?state.pB_ready:state.pA_ready);
+  $("placeStatus").textContent = ready?(oppReady?"準備開戰！":"等對方佈署完成…"):"";
+}
+$("btnRandom").onclick=()=>{ myPlace={}; const cells=shuffle([...Array(N).keys()]); let i=0;
+  Object.keys(PLAN).forEach(t=>{ for(let k=0;k<PLAN[t];k++) myPlace[cells[i++]]=t; }); renderPlace(); };
+$("btnClear").onclick=()=>{ myPlace={}; renderPlace(); };
+$("btnReady").onclick=async()=>{ await update(roomRef, me==="A"?{boardA:myPlace,pA_ready:true}:{boardB:myPlace,pB_ready:true}); };
+
+/* ===== 對戰 ===== */
+function shipsSunk(board,reveal){ return Object.keys(board||{}).filter(k=>board[k]==="ship"&&(reveal||{})[k]).length; }
+function renderBattle(){
+  show("s-battle");
+  const an=state.pA_name||"A隊", bn=state.pB_name||"B隊";
+  const myName=me==="A"?an:bn, oppName=me==="A"?bn:an;
+  const myHp=state[myHpKey()], oppHp=state[oppHpKey()];
+  const iSunk=shipsSunk(state[oppBoardKey()],state[oppRevKey()]);   // 我擊沉對方幾艘
+  const oppSunk=shipsSunk(state[myBoardKey()],state[myRevKey()]);   // 對方擊沉我幾艘
+  const myTurn = state.turn===me;
+  $("hud").innerHTML=
+   `<div class="p me ${myTurn?'turn':''}"><div class="nm ${me==='A'?'a':'b'}">${myName}（你）</div><div class="hpv">❤${"❤".repeat(Math.max(0,myHp-1))}</div><div class="sk">擊沉 ${iSunk}/2</div></div>
+    <div class="p ${!myTurn?'turn':''}"><div class="nm ${me==='A'?'b':'a'}">${oppName}</div><div class="hpv">❤${"❤".repeat(Math.max(0,oppHp-1))}</div><div class="sk">擊沉 ${oppSunk}/2</div></div>`;
+  $("turnbar").className="turnbar "+(myTurn?"you":"wait");
+  $("turnbar").textContent = myTurn?"👉 輪到你！點敵方海域攻擊":"⏳ 等對方出手…";
+
+  const oppBoard=state[oppBoardKey()]||{}, oppRev=state[oppRevKey()]||{};
+  const eb=$("enemyBoard"); eb.innerHTML="";
+  for(let i=0;i<N;i++){
+    const c=document.createElement("div"); const shown=oppRev[i];
+    if(shown){ const t=oppBoard[i]||"water"; c.className="cell hit "+t; c.textContent=t==="water"?"🌊":PIECE[t].e; }
+    else { c.className="cell"+(myTurn?"":" dim"); c.textContent="❓";
+      if(myTurn) c.onclick=()=>attack(i); }
+    eb.appendChild(c);
+  }
+  const myBoard=state[myBoardKey()]||{}, myRev=state[myRevKey()]||{};
+  const mb=$("myBoard"); mb.innerHTML="";
+  for(let i=0;i<N;i++){
+    const c=document.createElement("div"); const t=myBoard[i]||"water";
+    c.className="cell "+(t==="water"?"":t)+(myRev[i]?" hit":"");
+    c.textContent = t==="water"?(myRev[i]?"🌊":""):PIECE[t].e;
+    if(myRev[i]&&t!=="water") c.style.boxShadow="0 0 0 2px var(--bad) inset";
+    mb.appendChild(c);
+  }
+}
+let curIdx=-1, curQ=null;
+function attack(i){ if(busy||state.turn!==me||state.winner) return;
+  if((state[oppRevKey()]||{})[i]) return;
+  curIdx=i; curQ=getQ(); openModal(curQ); }
+function openModal(q){
+  $("qtop").textContent="🎯 答對才能攻擊！";
+  $("figWrap").innerHTML=q.fig?fig(q.fig):""; $("figWrap").style.display=q.fig?"flex":"none";
+  $("qtext").innerHTML=q.q;
+  const ks=["A","B","C","D"], o=$("opts"); o.innerHTML="";
+  q.opts.forEach((op,idx)=>{ const btn=document.createElement("button"); btn.className="opt";
+    btn.innerHTML=`<span class="k">${ks[idx]}</span><span>${op.t}</span>`; btn.onclick=()=>answer(btn,op,q); o.appendChild(btn); });
+  $("fb").className="fb"; $("mnext").innerHTML=""; $("modal").classList.add("show");
+}
+function answer(btn,op,q){
+  if(busy) return; busy=true;
+  document.querySelectorAll(".opt").forEach(b=>b.classList.add("dis"));
+  const fb=$("fb");
+  if(op.c){
+    btn.classList.add("correct"); fb.className="fb ok show"; fb.innerHTML="<b>答對！攻擊命中 🎯</b>"+q.exp;
+    const nb=document.createElement("button"); nb.className="btn"; nb.textContent="開砲 💥";
+    nb.onclick=()=>{ $("modal").classList.remove("show"); busy=false; resolveHit(curIdx); };
+    $("mnext").appendChild(nb);
+  }else{
+    btn.classList.add("wrong");
+    document.querySelectorAll(".opt").forEach(b=>{ if(b.querySelector("span:last-child").textContent===q.opts.find(x=>x.c).t) b.classList.add("correct"); });
+    fb.className="fb ng show"; fb.innerHTML="<b>答錯，攻擊落空</b>"+q.exp;
+    const nb=document.createElement("button"); nb.className="btn ghost"; nb.textContent="換對方 →";
+    nb.onclick=async()=>{ $("modal").classList.remove("show"); busy=false; await update(roomRef,{turn:opp(),msg:"答錯落空"}); };
+    $("mnext").appendChild(nb);
+  }
+}
+async function resolveHit(i){
+  const oppBoard=state[oppBoardKey()]||{}; const reveal={...(state[oppRevKey()]||{})}; reveal[i]=true;
+  const t=oppBoard[i]||"water";
+  let myHp=state[myHpKey()];
+  if(t==="bomb"){ myHp-=2; shake(); flashRed(); }
+  else if(t==="death"){ myHp-=3; shake(); flashRed(); }
+  else if(t==="star"){ myHp+=2; confetti("⭐"); }
+  else if(t==="ship"){ confetti("🚢"); }
+  const sunk=shipsSunk(oppBoard,reveal);
+  let winner=null;
+  if(sunk>=2){ winner=me; confettiBig(); }
+  else if(myHp<=0){ winner=opp(); }
+  const patch={ turn:opp(), [oppRevKey()]:reveal, [myHpKey()]:myHp, winner,
+    msg: t==="ship"?"擊沉一艘！":t==="bomb"?"踩到炸彈 −2":t==="death"?"死亡陷阱 −3":t==="star"?"救命星 +2":"空海域" };
+  await update(roomRef, patch);
+}
+
+/* ===== 結算 ===== */
+function renderEnd(){
+  show("s-end");
+  const an=state.pA_name||"A隊", bn=state.pB_name||"B隊";
+  const win = state.winner===me;
+  $("endIcon").textContent = win?"🏆":"💥";
+  $("endTitle").textContent = win?"獲勝！":"落敗…";
+  const winnerName = state.winner==="A"?an:bn;
+  $("endMsg").innerHTML = win? `${winnerName} 擊沉敵方艦隊，贏得海戰！⚓` : `${winnerName} 獲勝了。再來一局雪恥！`;
+}
+$("btnAgain").onclick=async()=>{ // 保留雙方暱稱，重置棋盤
+  myPlace={};
+  await set(roomRef, { phase:"placement", turn:"A", winner:null,
+    pA_joined:true, pB_joined:true, pA_ready:false, pB_ready:false,
+    pA_name:state.pA_name, pB_name:state.pB_name, pA_hp:HP0, pB_hp:HP0,
+    boardA:{}, boardB:{}, revealA:{}, revealB:{}, msg:"" });
+};
+$("btnHome").onclick=()=>{ location.reload(); };
+
+/* ===== 特效 ===== */
+function shake(){ $("app")?.classList?.add("shake"); document.querySelector(".app").classList.add("shake"); setTimeout(()=>document.querySelector(".app").classList.remove("shake"),420); }
+function flashRed(){ const f=$("flash"); f.classList.remove("go"); void f.offsetWidth; f.classList.add("go"); }
+function confetti(e){ for(let i=0;i<12;i++) drop(e||"⭐"); }
+function confettiBig(){ for(let i=0;i<40;i++) setTimeout(()=>drop(rnd(["🎉","⭐","🏆","✨","💥"])),i*45); }
+function drop(e){ const d=document.createElement("div"); d.className="fx"; d.textContent=e; d.style.left=Math.random()*100+"vw";
+  d.style.fontSize=(20+Math.random()*18)+"px"; d.style.animation="fall "+(1.5+Math.random()*1.5)+"s linear forwards";
+  document.body.appendChild(d); setTimeout(()=>d.remove(),3200); }
+</script>
+</body>
+</html>
