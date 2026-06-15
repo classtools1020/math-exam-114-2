@@ -1,7 +1,7 @@
 # 114-2數學第三次段考 — 我的班級工具專案
 
 ## 對話開始時請先讀
-進度與最近更動都在 Obsidian：`Obsidian Vault/114-2數學第三次段考/工作筆記.md`
+進度與最近更動都在 Obsidian（secondbrain vault，已連 Obsidian MCP）：`secondbrain/114-2數學第三次段考/工作筆記.md`
 
 ## 工作模式
 - **加新工具**：對 Claude 說「我想做一個 XXX 工具」→ Claude 會建 `tools/<工具名>/` 子資料夾、引導我跟著 EP10 影片做
@@ -11,7 +11,7 @@
 ## 工作桌 + 三個家
 - 📋 GDrive 工作桌：`H:\我的雲端硬碟\114-2數學第三次段考\`（自動跨電腦同步）
 - 🐙 GitHub repo：`classtools1020/math-exam-114-2`（公開，網頁的家）
-- 📘 Obsidian 駕駛艙：`Obsidian Vault/114-2數學第三次段考/工作筆記.md`（想法的家）
+- 📘 Obsidian 駕駛艙：`secondbrain/114-2數學第三次段考/工作筆記.md`（想法的家，已連 Obsidian MCP）
 - 🔥 Firebase 專案：（尚未連接，之後建的話寫在這，資料的家）
 
 ## 工具清單
