@@ -40,14 +40,15 @@
 <body>
 <canvas id="cv"></canvas>
 <div class="top" id="top"></div>
-<div class="hint">👆 用手指拖曳可以 360° 旋轉圖形</div>
+<div class="hint">預設「正面」顯示正確形狀 ・ 想看立體感就用手指拖曳旋轉，按「🎯 正面」轉回來</div>
 <div class="panel">
   <div class="nm" id="nm">正方形</div>
   <div class="pp" id="pp"></div>
   <div class="ctrl">
-    <button id="btnRot" class="on">🔄 自動旋轉</button>
+    <button id="btnReset">🎯 正面</button>
+    <button id="btnRot">🔄 自動旋轉</button>
     <button id="btnDiag" class="on">✨ 對角線</button>
-    <button id="btnFlat">🔲 平放/立體</button>
+    <button id="btnFlat">🧊 立體/平放</button>
   </div>
 </div>
 <div class="err" id="err">你的瀏覽器不支援 3D（WebGL）。<br>請改用單人版/對戰版遊戲。</div>
@@ -73,7 +74,7 @@ const SHAPES = {
 const ORDER=['square','rect','rhombus','para','kite','isotrap'];
 
 let renderer, scene, camera, controls, group, current='square';
-let showDiag=true, flat=false;
+let showDiag=true, flat=true;
 
 function init(){
   const canvas=document.getElementById('cv');
@@ -83,10 +84,10 @@ function init(){
   resize();
   scene=new THREE.Scene();
   camera=new THREE.PerspectiveCamera(45,1,0.1,100);
-  camera.position.set(0,1.5,7);
+  camera.position.set(0,0,7);
   controls=new OrbitControls(camera,canvas);
   controls.enableDamping=true; controls.dampingFactor=.08;
-  controls.autoRotate=true; controls.autoRotateSpeed=2.2;
+  controls.autoRotate=false; controls.autoRotateSpeed=2.2;
   controls.enablePan=false; controls.minDistance=4; controls.maxDistance=12;
   build(current);
   window.addEventListener('resize',resize);
@@ -123,14 +124,14 @@ function build(key){
     group.add(new THREE.Line(d1,new THREE.LineBasicMaterial({color:0x2fe0f0})));
     group.add(new THREE.Line(d2,new THREE.LineBasicMaterial({color:0xbff24a})));
     // 交點
-    const inter=new THREE.Mesh(new THREE.SphereGeometry(0.09,16,16),new THREE.MeshBasicMaterial({color:0xffffff}));
+    const inter=new THREE.Mesh(new THREE.SphereGeometry(0.07,16,16),new THREE.MeshBasicMaterial({color:0xffffff}));
     // 兩對角線交點（取對角線1與2的交點，近似用線段交點公式）
     const ix=lineInter(s.pts[0],s.pts[2],s.pts[1],s.pts[3]);
     if(ix) inter.position.set(ix[0],ix[1],0);
     group.add(inter);
   }
   // 頂點
-  pts.forEach(p=>{ const m=new THREE.Mesh(new THREE.SphereGeometry(0.11,18,18),new THREE.MeshBasicMaterial({color:0xffd24a}));
+  pts.forEach(p=>{ const m=new THREE.Mesh(new THREE.SphereGeometry(0.075,18,18),new THREE.MeshBasicMaterial({color:0xffd24a}));
     m.position.copy(p); group.add(m); });
 
   scene.add(group);
@@ -149,6 +150,7 @@ function animate(){ requestAnimationFrame(animate); if(controls){controls.update
 const top=document.getElementById('top');
 ORDER.forEach(k=>{ const b=document.createElement('button'); b.className='shape-btn'+(k===current?' on':'');
   b.textContent=SHAPES[k].name; b.onclick=()=>{ current=k; document.querySelectorAll('.shape-btn').forEach(x=>x.classList.remove('on')); b.classList.add('on'); build(k); }; top.appendChild(b); });
+document.getElementById('btnReset').onclick=()=>{ controls.autoRotate=false; document.getElementById('btnRot').classList.remove('on'); controls.reset(); };
 document.getElementById('btnRot').onclick=function(){ controls.autoRotate=!controls.autoRotate; this.classList.toggle('on',controls.autoRotate); };
 document.getElementById('btnDiag').onclick=function(){ showDiag=!showDiag; this.classList.toggle('on',showDiag); build(current); };
 document.getElementById('btnFlat').onclick=function(){ flat=!flat; this.classList.toggle('on',flat); build(current); };
