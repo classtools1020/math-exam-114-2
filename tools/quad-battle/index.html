@@ -8,12 +8,12 @@
   *{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   html,body{ height:100%; }
   :root{
-    --bg1:#0a1326; --bg2:#10204a; --card:#15203f; --tile:#1d2c52; --tile2:#27406f;
-    --line:#33508c; --txt:#eaf1ff; --muted:#8ea2cc;
+    --bg1:#05080f; --bg2:#0a1730; --card:#101b35; --tile:#13213f; --tile2:#1b2d52;
+    --line:#284568; --txt:#eaf1ff; --muted:#8ea2cc;
     --cy:#2fe0f0; --lime:#bff24a; --gold:#ffd24a; --bad:#ff6b81; --good:#5be39a; --pur:#b58cff;
   }
   body{ font-family:"PingFang TC","Microsoft JhengHei","Noto Sans TC",sans-serif;
-    background:radial-gradient(1000px 500px at 50% -5%,#1b3a78 0%,var(--bg2) 45%,var(--bg1) 100%);
+    background:radial-gradient(900px 480px at 50% -8%,#14305f 0%,var(--bg2) 46%,var(--bg1) 100%);
     color:var(--txt); min-height:100%; display:flex; align-items:flex-start; justify-content:center;
     padding:12px; user-select:none; -webkit-user-select:none; overflow-x:hidden; }
   .app{ width:100%; max-width:560px; }
@@ -43,31 +43,40 @@
   /* 房號 */
   .code-big{ font-size:46px; font-weight:900; letter-spacing:8px; color:var(--cy); text-align:center; margin:6px 0; }
 
-  /* HUD */
-  .hud{ display:flex; gap:8px; margin-bottom:10px; }
-  .hud .p{ flex:1; background:var(--card); border:1px solid var(--line); border-radius:12px; padding:8px 6px; text-align:center; }
-  .hud .p.me{ border-color:var(--cy); } .hud .p.turn{ box-shadow:0 0 0 2px var(--lime) inset; }
-  .hud .nm{ font-size:13px; font-weight:800; } .hud .nm.a{color:var(--cy);} .hud .nm.b{color:var(--pur);}
-  .hud .hpv{ font-size:15px; color:var(--bad); letter-spacing:1px; }
-  .hud .sk{ font-size:12px; color:var(--gold); }
-  .turnbar{ text-align:center; font-size:20px; font-weight:900; padding:8px; border-radius:12px; margin-bottom:10px; }
-  .turnbar.you{ background:rgba(191,242,74,.16); color:var(--lime); border:1px solid var(--lime); }
+  /* HUD 雙隊 */
+  .hud{ display:flex; gap:8px; margin-bottom:10px; align-items:stretch; }
+  .team{ flex:1; min-width:0; background:linear-gradient(180deg,rgba(20,34,64,.92),rgba(11,21,42,.92));
+    border:1.5px solid var(--line); border-radius:14px; padding:9px 8px; text-align:center; transition:box-shadow .2s,border-color .2s; }
+  .team.tA{ border-color:rgba(47,224,240,.55); } .team.tB{ border-color:rgba(191,242,74,.5); }
+  .team.act.tA{ box-shadow:0 0 0 1.5px var(--cy) inset,0 0 18px rgba(47,224,240,.4); }
+  .team.act.tB{ box-shadow:0 0 0 1.5px var(--lime) inset,0 0 18px rgba(191,242,74,.35); }
+  .team .tn{ font-size:13px; font-weight:900; margin-bottom:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .team.tA .tn{ color:var(--cy); } .team.tB .tn{ color:var(--lime); }
+  .team .hearts{ font-size:12px; letter-spacing:1px; line-height:1.2; }
+  .team .tb{ font-size:11px; color:var(--muted); margin-top:3px; }
+  .vs{ flex:0 0 60px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0; }
+  .vs .vsl{ font-size:10px; color:var(--muted); letter-spacing:1px; }
+  .vs .score{ font-size:24px; font-weight:900; color:#fff; text-shadow:0 0 10px rgba(255,255,255,.35); }
+  .turnbar{ text-align:center; font-size:18px; font-weight:900; padding:9px; border-radius:999px; margin-bottom:12px; }
+  .turnbar.you{ background:rgba(191,242,74,.16); color:var(--lime); border:1px solid var(--lime); box-shadow:0 0 16px rgba(191,242,74,.25); }
   .turnbar.wait{ background:var(--card); color:var(--muted); border:1px solid var(--line); }
 
   /* 棋盤 */
   .lbl{ font-size:14px; color:var(--muted); margin:2px 0 6px; font-weight:700; }
   .lbl b{ color:var(--txt); }
   .board{ display:grid; gap:7px; }
-  .cell{ aspect-ratio:1; border-radius:11px; background:linear-gradient(180deg,var(--tile),#15243f);
+  .cell{ aspect-ratio:1; border-radius:12px; background:radial-gradient(circle at 50% 38%,#172a52,#0e1c3a);
     border:1px solid var(--line); display:flex; align-items:center; justify-content:center; font-size:26px;
-    cursor:pointer; transition:transform .08s, background .15s; }
+    cursor:pointer; transition:transform .08s, box-shadow .15s; }
   .cell:active{ transform:scale(.92); }
   .cell.hit{ animation:flip .35s; } @keyframes flip{0%{transform:rotateY(90deg);}100%{transform:rotateY(0);}}
-  .cell.water{ background:#13325e; } .cell.bomb{ background:rgba(255,107,129,.22); border-color:var(--bad);}
-  .cell.star{ background:rgba(91,227,154,.22); border-color:var(--good);} .cell.ship{ background:rgba(255,210,74,.25); border-color:var(--gold);}
-  .cell.death{ background:rgba(181,140,255,.25); border-color:var(--pur);}
-  .cell.sel{ outline:3px solid var(--lime); }
-  .cell.dim{ opacity:.4; cursor:default; }
+  .cell.water{ background:#0f2148; }
+  .cell.bomb{ background:radial-gradient(circle,rgba(255,77,77,.42),rgba(110,18,18,.5)); border-color:var(--bad); box-shadow:0 0 14px rgba(255,77,77,.5); }
+  .cell.star{ background:rgba(91,227,154,.22); border-color:var(--good); box-shadow:0 0 12px rgba(91,227,154,.4); }
+  .cell.ship{ background:radial-gradient(circle,rgba(47,224,240,.42),rgba(15,60,90,.45)); border-color:var(--cy); box-shadow:0 0 16px rgba(47,224,240,.6); }
+  .cell.death{ background:rgba(181,140,255,.28); border-color:var(--pur); box-shadow:0 0 14px rgba(181,140,255,.5); }
+  .cell.sel{ outline:3px solid var(--lime); box-shadow:0 0 16px rgba(191,242,74,.6); }
+  .cell.dim{ opacity:.45; cursor:default; }
 
   /* 佈署工具列 */
   .palette{ display:flex; gap:6px; margin-bottom:10px; }
@@ -361,6 +370,7 @@ $("btnReady").onclick=async()=>{ await update(roomRef, me==="A"?{boardA:myPlace,
 
 /* ===== 對戰 ===== */
 function shipsSunk(board,reveal){ return Object.keys(board||{}).filter(k=>board[k]==="ship"&&(reveal||{})[k]).length; }
+function heartRow(hp){ hp=Math.max(0,Math.min(HP0,hp)); let s=""; for(let i=0;i<HP0;i++) s+=i<hp?"❤":"🤍"; return s; }
 function renderBattle(){
   show("s-battle");
   const an=state.pA_name||"A隊", bn=state.pB_name||"B隊";
@@ -370,8 +380,9 @@ function renderBattle(){
   const oppSunk=shipsSunk(state[myBoardKey()],state[myRevKey()]);   // 對方擊沉我幾艘
   const myTurn = state.turn===me;
   $("hud").innerHTML=
-   `<div class="p me ${myTurn?'turn':''}"><div class="nm ${me==='A'?'a':'b'}">${myName}（你）</div><div class="hpv">❤${"❤".repeat(Math.max(0,myHp-1))}</div><div class="sk">擊沉 ${iSunk}/2</div></div>
-    <div class="p ${!myTurn?'turn':''}"><div class="nm ${me==='A'?'b':'a'}">${oppName}</div><div class="hpv">❤${"❤".repeat(Math.max(0,oppHp-1))}</div><div class="sk">擊沉 ${oppSunk}/2</div></div>`;
+   `<div class="team tA ${myTurn?'act':''}"><div class="tn">🐋 ${myName}（你）</div><div class="hearts">${heartRow(myHp)}</div><div class="tb">${myTurn?'⚔️ 進攻中':'待命'} ・ HP ${myHp}/${HP0}</div></div>
+    <div class="vs"><div class="vsl">VS</div><div class="score">${iSunk} : ${oppSunk}</div><div class="vsl">擊沉</div></div>
+    <div class="team tB ${!myTurn?'act':''}"><div class="tn">⚡ ${oppName}</div><div class="hearts">${heartRow(oppHp)}</div><div class="tb">${!myTurn?'⚔️ 進攻中':'待命'} ・ HP ${oppHp}/${HP0}</div></div>`;
   $("turnbar").className="turnbar "+(myTurn?"you":"wait");
   $("turnbar").textContent = myTurn?"👉 輪到你！點敵方海域攻擊":"⏳ 等對方出手…";
 
