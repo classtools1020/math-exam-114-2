@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>四邊形 3D 探索 🌀</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;overflow:hidden;}
+  body{font-family:"PingFang TC","Microsoft JhengHei","Noto Sans TC",sans-serif;
+    background:radial-gradient(900px 500px at 50% 0%,#1b3a78,#0d1426 60%,#080d1a);color:#eaf1ff;
+    user-select:none;-webkit-user-select:none;}
+  #cv{position:fixed;inset:0;width:100%;height:100%;display:block;}
+  .top{position:fixed;top:0;left:0;right:0;padding:10px 12px;display:flex;gap:8px;flex-wrap:wrap;
+    justify-content:center;z-index:5;background:linear-gradient(180deg,rgba(8,13,26,.9),transparent);}
+  .shape-btn{font-family:inherit;font-size:15px;font-weight:800;padding:9px 14px;border-radius:11px;
+    border:1.5px solid #33508c;background:#15203f;color:#cdd9f5;cursor:pointer;}
+  .shape-btn.on{border-color:#bff24a;background:#27406f;color:#fff;}
+  .panel{position:fixed;left:12px;right:12px;bottom:12px;z-index:5;background:rgba(21,32,63,.92);
+    border:1px solid #33508c;border-radius:16px;padding:14px 16px;text-align:center;backdrop-filter:blur(4px);}
+  .panel .nm{font-size:24px;font-weight:900;background:linear-gradient(90deg,#2fe0f0,#bff24a);
+    -webkit-background-clip:text;background-clip:text;color:transparent;margin-bottom:4px;}
+  .panel .pp{font-size:15px;color:#cdd9f5;line-height:1.6;}
+  .panel .pp .cy{color:#2fe0f0;font-weight:800;} .panel .pp .lm{color:#bff24a;font-weight:800;}
+  .ctrl{display:flex;gap:8px;justify-content:center;margin-top:10px;}
+  .ctrl button{font-family:inherit;font-size:14px;font-weight:700;padding:8px 14px;border-radius:10px;
+    border:1px solid #33508c;background:#1d2c52;color:#eaf1ff;cursor:pointer;}
+  .ctrl button.on{border-color:#bff24a;color:#bff24a;}
+  .hint{position:fixed;top:58px;left:0;right:0;text-align:center;font-size:13px;color:#8ea2cc;z-index:4;}
+  .err{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;
+    padding:30px;font-size:18px;color:#ff9c9c;z-index:9;display:none;}
+</style>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+}}
+</script>
+</head>
+<body>
+<canvas id="cv"></canvas>
+<div class="top" id="top"></div>
+<div class="hint">👆 用手指拖曳可以 360° 旋轉圖形</div>
+<div class="panel">
+  <div class="nm" id="nm">正方形</div>
+  <div class="pp" id="pp"></div>
+  <div class="ctrl">
+    <button id="btnRot" class="on">🔄 自動旋轉</button>
+    <button id="btnDiag" class="on">✨ 對角線</button>
+    <button id="btnFlat">🔲 平放/立體</button>
+  </div>
+</div>
+<div class="err" id="err">你的瀏覽器不支援 3D（WebGL）。<br>請改用單人版/對戰版遊戲。</div>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const SHAPES = {
+  square:  {name:'正方形',  pts:[[-1.4,1.4],[1.4,1.4],[1.4,-1.4],[-1.4,-1.4]],
+            pp:'四邊等長＋四個直角。對角線：<span class="cy">等長✓</span>　<span class="cy">互相平分✓</span>　<span class="lm">互相垂直✓</span>'},
+  rect:    {name:'長方形',  pts:[[-2,1],[2,1],[2,-1],[-2,-1]],
+            pp:'四個直角。對角線：<span class="cy">等長✓</span>　<span class="cy">互相平分✓</span>　垂直✗'},
+  rhombus: {name:'菱形',    pts:[[0,1.8],[1.3,0],[0,-1.8],[-1.3,0]],
+            pp:'四邊等長。對角線：等長✗　<span class="cy">互相平分✓</span>　<span class="lm">互相垂直✓</span>'},
+  para:    {name:'平行四邊形', pts:[[-1,1.2],[2,1.2],[1,-1.2],[-2,-1.2]],
+            pp:'兩組對邊平行。對角線：等長✗　<span class="cy">互相平分✓</span>　垂直✗'},
+  kite:    {name:'箏形',    pts:[[0,2],[1.3,0.3],[0,-1.6],[-1.3,0.3]],
+            pp:'兩組鄰邊等長。對角線：<span class="lm">一條垂直平分另一條</span>'},
+  isotrap: {name:'等腰梯形', pts:[[-1,1.1],[1,1.1],[2,-1.1],[-2,-1.1]],
+            pp:'兩腰等長。對角線：<span class="cy">等長✓</span>　互相平分✗　垂直✗'},
+};
+const ORDER=['square','rect','rhombus','para','kite','isotrap'];
+
+let renderer, scene, camera, controls, group, current='square';
+let showDiag=true, flat=false;
+
+function init(){
+  const canvas=document.getElementById('cv');
+  try{ renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true}); }
+  catch(e){ document.getElementById('err').style.display='flex'; return false; }
+  renderer.setPixelRatio(Math.min(2,window.devicePixelRatio));
+  resize();
+  scene=new THREE.Scene();
+  camera=new THREE.PerspectiveCamera(45,1,0.1,100);
+  camera.position.set(0,1.5,7);
+  controls=new OrbitControls(camera,canvas);
+  controls.enableDamping=true; controls.dampingFactor=.08;
+  controls.autoRotate=true; controls.autoRotateSpeed=2.2;
+  controls.enablePan=false; controls.minDistance=4; controls.maxDistance=12;
+  build(current);
+  window.addEventListener('resize',resize);
+  animate();
+  return true;
+}
+function resize(){ const w=window.innerWidth,h=window.innerHeight;
+  renderer.setSize(w,h); if(camera){camera.aspect=w/h;camera.updateProjectionMatrix();} }
+
+function v3(p){ return new THREE.Vector3(p[0],p[1],0); }
+function build(key){
+  if(group){ scene.remove(group); group.traverse(o=>{o.geometry&&o.geometry.dispose();o.material&&o.material.dispose();}); }
+  group=new THREE.Group();
+  const s=SHAPES[key]; const pts=s.pts.map(v3);
+
+  // 面
+  const shape=new THREE.Shape(); shape.moveTo(s.pts[0][0],s.pts[0][1]);
+  for(let i=1;i<s.pts.length;i++) shape.lineTo(s.pts[i][0],s.pts[i][1]); shape.closePath();
+  let faceGeo;
+  if(flat){ faceGeo=new THREE.ShapeGeometry(shape); }
+  else { faceGeo=new THREE.ExtrudeGeometry(shape,{depth:0.35,bevelEnabled:false}); faceGeo.translate(0,0,-0.175); }
+  const face=new THREE.Mesh(faceGeo,new THREE.MeshBasicMaterial({color:0x2fe0f0,transparent:true,opacity:0.16,side:THREE.DoubleSide}));
+  group.add(face);
+
+  // 邊框
+  const edgePts=[...pts,pts[0]];
+  const edgeGeo=new THREE.BufferGeometry().setFromPoints(edgePts);
+  group.add(new THREE.Line(edgeGeo,new THREE.LineBasicMaterial({color:0xffffff})));
+
+  // 對角線
+  if(showDiag){
+    const d1=new THREE.BufferGeometry().setFromPoints([pts[0],pts[2]]);
+    const d2=new THREE.BufferGeometry().setFromPoints([pts[1],pts[3]]);
+    group.add(new THREE.Line(d1,new THREE.LineBasicMaterial({color:0x2fe0f0})));
+    group.add(new THREE.Line(d2,new THREE.LineBasicMaterial({color:0xbff24a})));
+    // 交點
+    const inter=new THREE.Mesh(new THREE.SphereGeometry(0.09,16,16),new THREE.MeshBasicMaterial({color:0xffffff}));
+    // 兩對角線交點（取對角線1與2的交點，近似用線段交點公式）
+    const ix=lineInter(s.pts[0],s.pts[2],s.pts[1],s.pts[3]);
+    if(ix) inter.position.set(ix[0],ix[1],0);
+    group.add(inter);
+  }
+  // 頂點
+  pts.forEach(p=>{ const m=new THREE.Mesh(new THREE.SphereGeometry(0.11,18,18),new THREE.MeshBasicMaterial({color:0xffd24a}));
+    m.position.copy(p); group.add(m); });
+
+  scene.add(group);
+  document.getElementById('nm').textContent=s.name;
+  document.getElementById('pp').innerHTML=s.pp;
+}
+function lineInter(a,b,c,d){
+  const x1=a[0],y1=a[1],x2=b[0],y2=b[1],x3=c[0],y3=c[1],x4=d[0],y4=d[1];
+  const den=(x1-x2)*(y3-y4)-(y1-y2)*(x3-x4); if(Math.abs(den)<1e-6) return null;
+  const t=((x1-x3)*(y3-y4)-(y1-y3)*(x3-x4))/den;
+  return [x1+t*(x2-x1), y1+t*(y2-y1)];
+}
+function animate(){ requestAnimationFrame(animate); if(controls){controls.update(); renderer.render(scene,camera);} }
+
+// UI
+const top=document.getElementById('top');
+ORDER.forEach(k=>{ const b=document.createElement('button'); b.className='shape-btn'+(k===current?' on':'');
+  b.textContent=SHAPES[k].name; b.onclick=()=>{ current=k; document.querySelectorAll('.shape-btn').forEach(x=>x.classList.remove('on')); b.classList.add('on'); build(k); }; top.appendChild(b); });
+document.getElementById('btnRot').onclick=function(){ controls.autoRotate=!controls.autoRotate; this.classList.toggle('on',controls.autoRotate); };
+document.getElementById('btnDiag').onclick=function(){ showDiag=!showDiag; this.classList.toggle('on',showDiag); build(current); };
+document.getElementById('btnFlat').onclick=function(){ flat=!flat; this.classList.toggle('on',flat); build(current); };
+
+if(init()===false){ /* WebGL 不支援，已顯示提示 */ }
+</script>
+</body>
+</html>
