@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>四邊形王國 🏰 ｜ 4-3 特殊四邊形</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  :root{
+    --bg1:#0a1326;--bg2:#10204a;--card:#16203f;--line:#33508c;--txt:#eaf1ff;--muted:#94a0c4;
+    --cy:#2fe0f0;--lime:#bff24a;--gold:#ffd24a;--pur:#b58cff;--pink:#ff8fb1;
+  }
+  body{font-family:"PingFang TC","Microsoft JhengHei","Noto Sans TC",sans-serif;
+    background:radial-gradient(1100px 600px at 50% -8%,#23386e 0%,var(--bg2) 42%,var(--bg1) 100%);
+    color:var(--txt);min-height:100vh;overflow-x:hidden;position:relative;}
+  /* 背景漂浮四邊形 */
+  .bgfx{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;}
+  .bgfx span{position:absolute;display:block;border:2px solid rgba(255,255,255,.06);opacity:.5;animation:float linear infinite;}
+  @keyframes float{0%{transform:translateY(20px) rotate(0);}100%{transform:translateY(-40px) rotate(360deg);}}
+  .wrap{position:relative;z-index:1;max-width:880px;margin:0 auto;padding:44px 18px 60px;}
+  /* Hero */
+  .hero{text-align:center;margin-bottom:38px;animation:rise .6s ease both;}
+  .crown{font-size:60px;filter:drop-shadow(0 6px 14px rgba(0,0,0,.4));}
+  h1{font-size:46px;font-weight:900;line-height:1.1;margin:6px 0 10px;
+    background:linear-gradient(92deg,var(--cy),var(--lime),var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent;background-size:200% auto;animation:shine 5s linear infinite;}
+  @keyframes shine{to{background-position:200% center;}}
+  .sub{color:var(--muted);font-size:17px;letter-spacing:.5px;}
+  .sub b{color:#dbe6ff;}
+  /* 卡片 */
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;}
+  @media(max-width:560px){.grid{grid-template-columns:1fr;}h1{font-size:38px;}}
+  .tool{position:relative;display:block;text-decoration:none;color:inherit;background:linear-gradient(180deg,var(--card),#111a35);
+    border:1px solid var(--line);border-radius:22px;padding:24px 22px;overflow:hidden;
+    transition:transform .15s,box-shadow .15s,border-color .15s;animation:rise .6s ease both;}
+  .tool:nth-child(1){animation-delay:.05s}.tool:nth-child(2){animation-delay:.12s}
+  .tool:nth-child(3){animation-delay:.19s}.tool:nth-child(4){animation-delay:.26s}
+  .tool:hover{transform:translateY(-5px);box-shadow:0 16px 36px rgba(0,0,0,.45);}
+  .tool::before{content:"";position:absolute;inset:0;background:var(--glow);opacity:0;transition:opacity .2s;}
+  .tool:hover::before{opacity:.10;}
+  .tool:hover{border-color:var(--ac);}
+  .ico{font-size:46px;line-height:1;margin-bottom:12px;filter:drop-shadow(0 4px 8px rgba(0,0,0,.3));}
+  .tool h2{font-size:24px;font-weight:900;margin-bottom:6px;}
+  .tool p{color:var(--muted);font-size:15px;line-height:1.6;margin-bottom:16px;min-height:42px;}
+  .go{display:inline-flex;align-items:center;gap:6px;font-weight:800;font-size:15px;color:var(--ac);
+    border:1.5px solid var(--ac);border-radius:999px;padding:8px 18px;}
+  .tag{position:absolute;top:16px;right:16px;font-size:12px;font-weight:800;padding:5px 11px;border-radius:999px;
+    background:rgba(255,255,255,.08);color:#cdd9f5;border:1px solid var(--line);}
+  .a1{--ac:var(--cy);--glow:radial-gradient(400px 200px at 30% 0%,var(--cy),transparent);}
+  .a2{--ac:var(--lime);--glow:radial-gradient(400px 200px at 30% 0%,var(--lime),transparent);}
+  .a3{--ac:var(--pur);--glow:radial-gradient(400px 200px at 30% 0%,var(--pur),transparent);}
+  .a4{--ac:var(--gold);--glow:radial-gradient(400px 200px at 30% 0%,var(--gold),transparent);}
+  .foot{text-align:center;color:var(--muted);font-size:13px;margin-top:34px;line-height:1.8;}
+  .foot b{color:#cdd9f5;}
+  @keyframes rise{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:none;}}
+</style>
+</head>
+<body>
+<div class="bgfx" id="bgfx"></div>
+<div class="wrap">
+  <div class="hero">
+    <div class="crown">🏰</div>
+    <h1>四邊形王國</h1>
+    <div class="sub">114-2 數學 ・ <b>4-3 特殊四邊形</b> ・ 互動學習基地</div>
+  </div>
+
+  <div class="grid">
+    <a class="tool a1" href="tools/quadrilateral-island/">
+      <span class="tag">單人</span>
+      <div class="ico">🎯</div>
+      <h2>尋寶海戰</h2>
+      <p>各自在 iPad 上闖關，答對才能翻格、找出敵艦。練對角線性質與計算。</p>
+      <span class="go">開始遊戲 →</span>
+    </a>
+
+    <a class="tool a2" href="tools/quad-battle/">
+      <span class="tag">連線・兩組</span>
+      <div class="ico">⚔️</div>
+      <h2>海戰對戰版</h2>
+      <p>兩組連線 PK！佈署艦隊與陷阱，答對 4-3 題目攻擊，擊沉對方兩艘船就獲勝。</p>
+      <span class="go">建立 / 加入房間 →</span>
+    </a>
+
+    <a class="tool a3" href="tools/quad-3d/">
+      <span class="tag">3D 教學</span>
+      <div class="ico">🌀</div>
+      <h2>3D 互動探索</h2>
+      <p>手指拖曳 360° 旋轉六種四邊形，看清對角線「等長・平分・垂直」的差別。</p>
+      <span class="go">立體看圖 →</span>
+    </a>
+
+    <a class="tool a4" href="tools/teacher/">
+      <span class="tag">老師專用</span>
+      <div class="ico">🧑‍🏫</div>
+      <h2>教師後台</h2>
+      <p>看即時對戰房間、學生成績紀錄、最常答錯的題型分析（去識別化）。</p>
+      <span class="go">進入後台 →</span>
+    </a>
+  </div>
+
+  <div class="foot">
+    🐙 <b>芎林國中・數學</b>　｜　配合課本 4-3 特殊四邊形<br>
+    對角線性質 ・ 判別法 ・ 面積 ½d₁d₂ ・ 畢氏定理 ・ 等腰梯形
+  </div>
+</div>
+
+<script>
+  // 背景漂浮四邊形
+  const SH=["polygon","rect","rhombus"];
+  const box=document.getElementById("bgfx");
+  for(let i=0;i<9;i++){
+    const s=document.createElement("span");
+    const size=40+Math.random()*90;
+    s.style.width=size+"px"; s.style.height=size*(0.6+Math.random()*0.6)+"px";
+    s.style.left=Math.random()*100+"vw"; s.style.top=Math.random()*100+"vh";
+    s.style.animationDuration=(12+Math.random()*16)+"s";
+    s.style.animationDelay=(-Math.random()*16)+"s";
+    if(Math.random()<.5) s.style.borderRadius="0";
+    if(Math.random()<.4) s.style.transform="rotate(45deg)";
+    box.appendChild(s);
+  }
+</script>
+</body>
+</html>
