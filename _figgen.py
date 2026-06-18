@@ -388,6 +388,62 @@ def two_transversals(name, a1='100°', a2='127°', caption=None):
     return _save(fig, name)
 
 
+# ---------------------------------------------------------------------------
+# 學習單專用
+def trap_labeled(name, caption=None):
+    """大梯形，標示 上底 / 下底 / 腰 / 腰（教學參考圖）。"""
+    fig, ax = _new(4.4, 2.9)
+    A, B, C, D = (1.0, 1.9), (3.0, 1.9), (3.9, 0.0), (0.1, 0.0)
+    ax.add_patch(Polygon([A, B, C, D], closed=True, facecolor=FILL,
+                         edgecolor=EDGE, lw=2.8, zorder=2))
+    # 上底 AB
+    ax.annotate('上底', xy=((A[0]+B[0])/2, A[1]), xytext=((A[0]+B[0])/2, A[1]+0.5),
+                ha='center', fontsize=14, fontweight='bold', color='#c0392b',
+                arrowprops=dict(arrowstyle='->', color='#c0392b', lw=1.8))
+    # 下底 DC
+    ax.annotate('下底', xy=((C[0]+D[0])/2, 0), xytext=((C[0]+D[0])/2, -0.55),
+                ha='center', fontsize=14, fontweight='bold', color='#c0392b',
+                arrowprops=dict(arrowstyle='->', color='#c0392b', lw=1.8))
+    # 左腰 AD
+    ax.annotate('腰', xy=((A[0]+D[0])/2, (A[1]+D[1])/2),
+                xytext=((A[0]+D[0])/2-0.95, (A[1]+D[1])/2),
+                ha='center', va='center', fontsize=14, fontweight='bold',
+                color=GREEN, arrowprops=dict(arrowstyle='->', color=GREEN, lw=1.8))
+    # 右腰 BC
+    ax.annotate('腰', xy=((B[0]+C[0])/2, (B[1]+C[1])/2),
+                xytext=((B[0]+C[0])/2+0.95, (B[1]+C[1])/2),
+                ha='center', va='center', fontsize=14, fontweight='bold',
+                color=GREEN, arrowprops=dict(arrowstyle='->', color=GREEN, lw=1.8))
+    ax.set_xlim(-1.4, 5.3); ax.set_ylim(-1.0, 2.6)
+    if caption:
+        ax.text(1.95, -0.95, caption, fontsize=11, color=GRAY, ha='center')
+    return _save(fig, name)
+
+def pick_shapes(name, items, caption=None):
+    """一排有編號的圖形，讓學生圈出/打勾。items: list of (編號, kind)。"""
+    n = len(items)
+    fig, ax = _new(1.55*n, 2.5)
+    for i, (num, kind) in enumerate(items):
+        cx = i*2.2 + 1.1
+        ax.add_patch(Circle((cx, 2.1), 0.26, facecolor='white',
+                            edgecolor=TXT, lw=1.8, zorder=4))
+        ax.text(cx, 2.1, str(num), fontsize=14, fontweight='bold', color=TXT,
+                ha='center', va='center', zorder=5)
+        if kind == 'tri':
+            _mini_shape_tri(ax, cx, 1.15, s=0.62)
+        else:
+            _mini_shape(ax, cx, 1.15, kind, s=0.62)
+    if caption:
+        ax.text(n*1.1, 0.05, caption, fontsize=10.5, color=GRAY, ha='center')
+    ax.set_xlim(0, n*2.2); ax.set_ylim(-0.1, 2.5)
+    return _save(fig, name)
+
+def _mini_shape_tri(ax, cx, cy, s=0.6, col=EDGE):
+    pts = [(cx, cy+0.8*s), (cx+0.85*s, cy-0.7*s), (cx-0.85*s, cy-0.7*s)]
+    ax.add_patch(Polygon(pts, closed=True, facecolor=FILL, edgecolor=col,
+                         lw=2.4, zorder=2))
+
+
 if __name__ == '__main__':
     quad('sample_para.png', kind='para', side_labels={'AD': '8', 'AB': '5'},
          caption='平行四邊形 ABCD')
