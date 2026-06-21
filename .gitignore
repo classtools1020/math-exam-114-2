@@ -18,3 +18,6 @@ package-lock.json
 # Python 暫存
 __pycache__/
 _unpacked/
+
+# 已確認有數學圖示錯誤的舊考卷，僅留在 GDrive 備查
+舊版_勿用_角度圖有誤/
